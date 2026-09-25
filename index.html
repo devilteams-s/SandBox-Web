@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Element Sandbox - Piksel Fizik Simülasyonu</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="logo">
+        <span class="icon">⚗️</span>
+        <div>
+          <h1>ElementLab Simulator</h1>
+          <p class="subtitle">Hücresel Otomat & Piksel Fizik Motoru</p>
+        </div>
+      </div>
+      <div class="stats-panel">
+        <div class="stat"><span class="label">FPS:</span> <span id="fps-counter" class="val">60</span></div>
+        <div class="stat"><span class="label">Parçacık:</span> <span id="particle-counter" class="val">0</span></div>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- Sol Panel: Araçlar & Elementler -->
+      <aside class="sidebar">
+        <div class="section-title">Element Seçimi</div>
+        <div class="element-grid" id="element-buttons">
+          <button class="el-btn active" data-element="sand" style="--btn-color: #f6d365;">
+            <span class="el-icon">⏳</span> Kum (Sand)
+          </button>
+          <button class="el-btn" data-element="water" style="--btn-color: #4facfe;">
+            <span class="el-icon">💧</span> Su (Water)
+          </button>
+          <button class="el-btn" data-element="wood" style="--btn-color: #8B5A2B;">
+            <span class="el-icon">🪵</span> Odun (Wood)
+          </button>
+          <button class="el-btn" data-element="fire" style="--btn-color: #ff4e50;">
+            <span class="el-icon">🔥</span> Ateş (Fire)
+          </button>
+          <button class="el-btn" data-element="gunpowder" style="--btn-color: #7f8c8d;">
+            <span class="el-icon">💣</span> Barut (Gunpowder)
+          </button>
+          <button class="el-btn" data-element="acid" style="--btn-color: #2ecc71;">
+            <span class="el-icon">🧪</span> Asit (Acid)
+          </button>
+          <button class="el-btn" data-element="plant" style="--btn-color: #27ae60;">
+            <span class="el-icon">🌱</span> Bitki (Plant)
+          </button>
+          <button class="el-btn" data-element="wall" style="--btn-color: #95a5a6;">
+            <span class="el-icon">🧱</span> Duvar (Wall)
+          </button>
+          <button class="el-btn eraser" data-element="empty" style="--btn-color: #e74c3c;">
+            <span class="el-icon">🧹</span> Silgi (Empty)
+          </button>
+        </div>
+
+        <div class="section-title" style="margin-top: 1.5rem;">Fırça Ayarları</div>
+        <div class="control-group">
+          <label for="brush-size">Fırça Boyutu: <span id="brush-size-val">3</span> px</label>
+          <input type="range" id="brush-size" min="1" max="15" value="3">
+        </div>
+
+        <div class="section-title" style="margin-top: 1.5rem;">Kontroller</div>
+        <div class="action-buttons">
+          <button id="btn-pause" class="act-btn">⏸️ Duraklat</button>
+          <button id="btn-step" class="act-btn">⏭️ Adım</button>
+          <button id="btn-clear" class="act-btn danger">🗑️ Temizle</button>
+        </div>
+
+        <div class="section-title" style="margin-top: 1.5rem;">Hazır Şablonlar</div>
+        <div class="action-buttons">
+          <button id="preset-hourglass" class="act-btn">⏳ Kum Saati</button>
+          <button id="preset-bomb" class="act-btn">💥 Barut & Ateş</button>
+        </div>
+      </aside>
+
+      <!-- Orta Alan: Canvas Çizim Ekranı -->
+      <section class="canvas-wrapper">
+        <canvas id="simCanvas" width="200" height="150"></canvas>
+        <div class="canvas-hint">Sol Tık: Element Dök / Sağ Tık: Sil | Tekerlek: Fırça Boyutu</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="simulator.js"></script>
+
+    <!-- Sağ Alt Köşe: Geliştirici İmzası -->
+    <a href="https://github.com/devilteams-s" target="_blank" rel="noopener noreferrer" class="creator-badge">
+      <span class="creator-dot"></span>
+      <span>made by <strong>@devilteams-s</strong></span>
+    </a>
+
+</body>
+</html>
