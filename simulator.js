@@ -24,6 +24,11 @@ const TYPE_ACID = 7;
 const TYPE_PLANT = 8;
 const TYPE_SMOKE = 9;
 
+// Doğal organik görünüm için Kum Renk Varyantları (3 farklı ton)
+const TYPE_SAND_DARK = 10;
+const TYPE_SAND_LIGHT = 11;
+const TYPE_SAND_GOLD = 12;
+
 // Önceden hesaplanmış 32-bit renk tablosu (ABGR - Little Endian)
 // Her karede 30.000 defa bit shift ve nesne erişimi yapmayı engeller!
 const COLOR_TABLE_32 = new Uint32Array(16);
@@ -31,16 +36,19 @@ function toABGR(r, g, b, a = 255) {
   return ((a & 0xff) << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff);
 }
 
-COLOR_TABLE_32[TYPE_EMPTY]     = toABGR(15, 17, 26, 255);
-COLOR_TABLE_32[TYPE_WALL]      = toABGR(149, 165, 166, 255);
-COLOR_TABLE_32[TYPE_SAND]      = toABGR(246, 211, 101, 255);
-COLOR_TABLE_32[TYPE_WATER]     = toABGR(79, 172, 254, 255);
-COLOR_TABLE_32[TYPE_WOOD]      = toABGR(139, 90, 43, 255);
-COLOR_TABLE_32[TYPE_FIRE]      = toABGR(255, 78, 80, 255);
-COLOR_TABLE_32[TYPE_GUNPOWDER] = toABGR(127, 140, 141, 255);
-COLOR_TABLE_32[TYPE_ACID]      = toABGR(46, 204, 113, 255);
-COLOR_TABLE_32[TYPE_PLANT]     = toABGR(39, 174, 96, 255);
-COLOR_TABLE_32[TYPE_SMOKE]     = toABGR(100, 105, 115, 255);
+COLOR_TABLE_32[TYPE_EMPTY]      = toABGR(15, 17, 26, 255);
+COLOR_TABLE_32[TYPE_WALL]       = toABGR(149, 165, 166, 255);
+COLOR_TABLE_32[TYPE_SAND]       = toABGR(246, 211, 101, 255); // Orta altın sarısı
+COLOR_TABLE_32[TYPE_SAND_DARK]  = toABGR(225, 185, 75, 255);  // Koyu çöl sarısı
+COLOR_TABLE_32[TYPE_SAND_LIGHT] = toABGR(255, 230, 138, 255); // Açık parlak kum sarısı
+COLOR_TABLE_32[TYPE_SAND_GOLD]  = toABGR(243, 198, 80, 255);  // Sıcak amber kumu
+COLOR_TABLE_32[TYPE_WATER]      = toABGR(79, 172, 254, 255);
+COLOR_TABLE_32[TYPE_WOOD]       = toABGR(139, 90, 43, 255);
+COLOR_TABLE_32[TYPE_FIRE]       = toABGR(255, 78, 80, 255);
+COLOR_TABLE_32[TYPE_GUNPOWDER]  = toABGR(127, 140, 141, 255);
+COLOR_TABLE_32[TYPE_ACID]       = toABGR(46, 204, 113, 255);
+COLOR_TABLE_32[TYPE_PLANT]      = toABGR(39, 174, 96, 255);
+COLOR_TABLE_32[TYPE_SMOKE]      = toABGR(100, 105, 115, 255);
 
 // Izgara Belleği
 let grid = new Uint8Array(TOTAL_CELLS);
@@ -106,8 +114,9 @@ function updateSimulation() {
       if (y < newMinY) newMinY = y;
       if (y > newMaxY) newMaxY = y;
 
-      // 1. KUM & BARUT
-      if (type === TYPE_SAND || type === TYPE_GUNPOWDER) {
+      // 1. KUM & BARUT (Tüm kum tonları aynı akışkanlık fiziğini paylaşır)
+      const isSandType = (type === TYPE_SAND || type === TYPE_SAND_DARK || type === TYPE_SAND_LIGHT || type === TYPE_SAND_GOLD);
+      if (isSandType || type === TYPE_GUNPOWDER) {
         if (y + 1 < HEIGHT) {
           const bIdx = belowOffset + x;
           const below = nextGrid[bIdx];
@@ -347,7 +356,16 @@ function drawAt(cx, cy, type, radius) {
         if (type === TYPE_EMPTY) {
           grid[idx] = TYPE_EMPTY;
         } else if (grid[idx] === TYPE_EMPTY || type === TYPE_WALL || (grid[idx] !== TYPE_WALL && Math.random() < 0.35)) {
-          grid[idx] = type;
+          if (type === TYPE_SAND) {
+            // Kum dökülürken 4 farklı doğal ton arasında zengin dağılım
+            const r = Math.random();
+            if (r < 0.35) grid[idx] = TYPE_SAND;
+            else if (r < 0.60) grid[idx] = TYPE_SAND_DARK;
+            else if (r < 0.85) grid[idx] = TYPE_SAND_LIGHT;
+            else grid[idx] = TYPE_SAND_GOLD;
+          } else {
+            grid[idx] = type;
+          }
           if (type === TYPE_FIRE) fireLife[idx] = 30;
         }
       }
@@ -438,7 +456,8 @@ document.getElementById('preset-hourglass').addEventListener('click', () => {
   }
   for (let y = 30; y < 60; y++) {
     for (let x = y + 5; x < WIDTH - y - 5; x++) {
-      grid[y * WIDTH + x] = TYPE_SAND;
+      const r = Math.random();
+      grid[y * WIDTH + x] = r < 0.35 ? TYPE_SAND : (r < 0.65 ? TYPE_SAND_DARK : TYPE_SAND_LIGHT);
     }
   }
 });
