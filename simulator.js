@@ -59,15 +59,23 @@ const TYPE_PLANT_DARK = 28;
 const TYPE_PLANT_LIGHT = 29;
 const TYPE_PLANT_VINE = 30;
 
+// Duvar & Tuğla Doku Varyantları (Antrasit Taş, Harç Grisi, Koyu Granit)
+const TYPE_WALL_DARK = 31;
+const TYPE_WALL_LIGHT = 32;
+const TYPE_WALL_SLATE = 33;
+
 // Önceden hesaplanmış 32-bit renk tablosu (ABGR - Little Endian)
 // Her karede 30.000 defa bit shift ve nesne erişimi yapmayı engeller!
-const COLOR_TABLE_32 = new Uint32Array(16);
+const COLOR_TABLE_32 = new Uint32Array(48);
 function toABGR(r, g, b, a = 255) {
   return ((a & 0xff) << 24) | ((b & 0xff) << 16) | ((g & 0xff) << 8) | (r & 0xff);
 }
 
 COLOR_TABLE_32[TYPE_EMPTY]      = toABGR(15, 17, 26, 255);
-COLOR_TABLE_32[TYPE_WALL]       = toABGR(149, 165, 166, 255);
+COLOR_TABLE_32[TYPE_WALL]        = toABGR(149, 165, 166, 255); // Klasik taş duvar grisi
+COLOR_TABLE_32[TYPE_WALL_DARK]   = toABGR(108, 122, 137, 255); // Koyu granit taş
+COLOR_TABLE_32[TYPE_WALL_LIGHT]  = toABGR(189, 195, 199, 255); // Açık harç ve kireç
+COLOR_TABLE_32[TYPE_WALL_SLATE]  = toABGR(82, 92, 101, 255);   // Sağlam arduvaz taşı
 COLOR_TABLE_32[TYPE_SAND]       = toABGR(246, 211, 101, 255); // Orta altın sarısı
 COLOR_TABLE_32[TYPE_SAND_DARK]  = toABGR(225, 185, 75, 255);  // Koyu çöl sarısı
 COLOR_TABLE_32[TYPE_SAND_LIGHT] = toABGR(255, 230, 138, 255); // Açık parlak kum sarısı
@@ -243,7 +251,7 @@ function updateSimulation() {
           const nIdx = neighbors[i];
           if (nIdx >= 0 && nIdx < TOTAL_CELLS) {
             const nt = grid[nIdx];
-            if (nt !== TYPE_EMPTY && nt !== TYPE_ACID && nt !== TYPE_ACID_DARK && nt !== TYPE_ACID_LIGHT && nt !== TYPE_ACID_TOXIC && nt !== TYPE_WALL) {
+            if (nt !== TYPE_EMPTY && nt !== TYPE_ACID && nt !== TYPE_ACID_DARK && nt !== TYPE_ACID_LIGHT && nt !== TYPE_ACID_TOXIC && (nt !== TYPE_WALL && nt !== TYPE_WALL_DARK && nt !== TYPE_WALL_LIGHT && nt !== TYPE_WALL_SLATE)) {
               nextGrid[nIdx] = TYPE_EMPTY;
               nextGrid[idx] = TYPE_EMPTY;
               reacted = true;
@@ -362,7 +370,7 @@ function explode(cx, cy, radius) {
 
       if (dx * dx + dy2 <= r2) {
         const idx = yOff + px;
-        if (grid[idx] !== TYPE_WALL) {
+        if ((grid[idx] !== TYPE_WALL && grid[idx] !== TYPE_WALL_DARK && grid[idx] !== TYPE_WALL_LIGHT && grid[idx] !== TYPE_WALL_SLATE)) {
           nextGrid[idx] = Math.random() < 0.7 ? TYPE_FIRE : TYPE_EMPTY;
           if (nextGrid[idx] === TYPE_FIRE) fireLife[idx] = 20;
         }
@@ -402,7 +410,7 @@ function drawAt(cx, cy, type, radius) {
         const idx = yOff + x;
         if (type === TYPE_EMPTY) {
           grid[idx] = TYPE_EMPTY;
-        } else if (grid[idx] === TYPE_EMPTY || type === TYPE_WALL || (grid[idx] !== TYPE_WALL && Math.random() < 0.35)) {
+        } else if (grid[idx] === TYPE_EMPTY || (type === TYPE_WALL || type === TYPE_WALL_DARK || type === TYPE_WALL_LIGHT || type === TYPE_WALL_SLATE) || ((grid[idx] !== TYPE_WALL && grid[idx] !== TYPE_WALL_DARK && grid[idx] !== TYPE_WALL_LIGHT && grid[idx] !== TYPE_WALL_SLATE) && Math.random() < 0.35)) {
           if (type === TYPE_SAND) {
             // Kum dökülürken 4 farklı doğal ton arasında zengin dağılım
             const r = Math.random();
@@ -447,6 +455,12 @@ function drawAt(cx, cy, type, radius) {
             else if (r < 0.65) grid[idx] = TYPE_PLANT_DARK;
             else if (r < 0.85) grid[idx] = TYPE_PLANT_LIGHT;
             else grid[idx] = TYPE_PLANT_VINE;
+          } else if (type === TYPE_WALL) {
+            const r = Math.random();
+            if (r < 0.40) grid[idx] = TYPE_WALL;
+            else if (r < 0.65) grid[idx] = TYPE_WALL_DARK;
+            else if (r < 0.85) grid[idx] = TYPE_WALL_LIGHT;
+            else grid[idx] = TYPE_WALL_SLATE;
           } else {
             grid[idx] = type;
           }
