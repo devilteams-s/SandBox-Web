@@ -34,6 +34,11 @@ const TYPE_WATER_DEEP = 13;
 const TYPE_WATER_LIGHT = 14;
 const TYPE_WATER_CYAN = 15;
 
+// Ateş Alev & Kor Varyantları (Turuncu, Parlak Sarı, Koyu Kor)
+const TYPE_FIRE_ORANGE = 16;
+const TYPE_FIRE_YELLOW = 17;
+const TYPE_FIRE_DARK = 18;
+
 // Önceden hesaplanmış 32-bit renk tablosu (ABGR - Little Endian)
 // Her karede 30.000 defa bit shift ve nesne erişimi yapmayı engeller!
 const COLOR_TABLE_32 = new Uint32Array(16);
@@ -52,7 +57,10 @@ COLOR_TABLE_32[TYPE_WATER_DEEP]  = toABGR(41, 128, 185, 255); // Derin koyu su m
 COLOR_TABLE_32[TYPE_WATER_LIGHT] = toABGR(129, 236, 236, 255); // Açık köpük / yüzey turkuazı
 COLOR_TABLE_32[TYPE_WATER_CYAN]  = toABGR(0, 168, 255, 255);   // Parlak neon camgöbeği
 COLOR_TABLE_32[TYPE_WOOD]       = toABGR(139, 90, 43, 255);
-COLOR_TABLE_32[TYPE_FIRE]       = toABGR(255, 78, 80, 255);
+COLOR_TABLE_32[TYPE_FIRE]        = toABGR(255, 78, 80, 255);  // Parlak kızılağaç ateşi
+COLOR_TABLE_32[TYPE_FIRE_ORANGE] = toABGR(255, 130, 45, 255); // Canlı alev turuncusu
+COLOR_TABLE_32[TYPE_FIRE_YELLOW] = toABGR(255, 220, 75, 255); // Akkor sarı merkez
+COLOR_TABLE_32[TYPE_FIRE_DARK]   = toABGR(215, 38, 56, 255);  // Koyu kor kırmızısı
 COLOR_TABLE_32[TYPE_GUNPOWDER]  = toABGR(127, 140, 141, 255);
 COLOR_TABLE_32[TYPE_ACID]       = toABGR(46, 204, 113, 255);
 COLOR_TABLE_32[TYPE_PLANT]      = toABGR(39, 174, 96, 255);
@@ -227,7 +235,7 @@ function updateSimulation() {
       }
 
       // 4. ATEŞ
-      else if (type === TYPE_FIRE) {
+      else if (type === TYPE_FIRE || type === TYPE_FIRE_ORANGE || type === TYPE_FIRE_YELLOW || type === TYPE_FIRE_DARK) {
         fireLife[idx]--;
         if (fireLife[idx] <= 0) {
           nextGrid[idx] = (x + y) % 5 === 0 ? TYPE_SMOKE : TYPE_EMPTY;
@@ -375,6 +383,12 @@ function drawAt(cx, cy, type, radius) {
             else if (r < 0.65) grid[idx] = TYPE_WATER_DEEP;
             else if (r < 0.85) grid[idx] = TYPE_WATER_LIGHT;
             else grid[idx] = TYPE_WATER_CYAN;
+          } else if (type === TYPE_FIRE) {
+            const r = Math.random();
+            if (r < 0.35) grid[idx] = TYPE_FIRE;
+            else if (r < 0.65) grid[idx] = TYPE_FIRE_ORANGE;
+            else if (r < 0.85) grid[idx] = TYPE_FIRE_YELLOW;
+            else grid[idx] = TYPE_FIRE_DARK;
           } else {
             grid[idx] = type;
           }
