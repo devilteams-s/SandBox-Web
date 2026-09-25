@@ -44,6 +44,11 @@ const TYPE_WOOD_DARK = 19;
 const TYPE_WOOD_LIGHT = 20;
 const TYPE_WOOD_BARK = 21;
 
+// Barut Tanecik Varyantları (Antrasit, Kömür Karası, Grafit)
+const TYPE_GUNPOWDER_DARK = 22;
+const TYPE_GUNPOWDER_LIGHT = 23;
+const TYPE_GUNPOWDER_BLACK = 24;
+
 // Önceden hesaplanmış 32-bit renk tablosu (ABGR - Little Endian)
 // Her karede 30.000 defa bit shift ve nesne erişimi yapmayı engeller!
 const COLOR_TABLE_32 = new Uint32Array(16);
@@ -69,7 +74,10 @@ COLOR_TABLE_32[TYPE_FIRE]        = toABGR(255, 78, 80, 255);  // Parlak kızıla
 COLOR_TABLE_32[TYPE_FIRE_ORANGE] = toABGR(255, 130, 45, 255); // Canlı alev turuncusu
 COLOR_TABLE_32[TYPE_FIRE_YELLOW] = toABGR(255, 220, 75, 255); // Akkor sarı merkez
 COLOR_TABLE_32[TYPE_FIRE_DARK]   = toABGR(215, 38, 56, 255);  // Koyu kor kırmızısı
-COLOR_TABLE_32[TYPE_GUNPOWDER]  = toABGR(127, 140, 141, 255);
+COLOR_TABLE_32[TYPE_GUNPOWDER]       = toABGR(127, 140, 141, 255); // Kurşuni barut grisi
+COLOR_TABLE_32[TYPE_GUNPOWDER_DARK]  = toABGR(85, 95, 105, 255);   // Koyu antrasit barut
+COLOR_TABLE_32[TYPE_GUNPOWDER_LIGHT] = toABGR(155, 168, 170, 255); // Açık kül grisi
+COLOR_TABLE_32[TYPE_GUNPOWDER_BLACK] = toABGR(50, 55, 60, 255);    // Zift kömür barutu
 COLOR_TABLE_32[TYPE_ACID]       = toABGR(46, 204, 113, 255);
 COLOR_TABLE_32[TYPE_PLANT]      = toABGR(39, 174, 96, 255);
 COLOR_TABLE_32[TYPE_SMOKE]      = toABGR(100, 105, 115, 255);
@@ -140,7 +148,8 @@ function updateSimulation() {
 
       // 1. KUM & BARUT (Tüm kum tonları aynı akışkanlık fiziğini paylaşır)
       const isSandType = (type === TYPE_SAND || type === TYPE_SAND_DARK || type === TYPE_SAND_LIGHT || type === TYPE_SAND_GOLD);
-      if (isSandType || type === TYPE_GUNPOWDER) {
+      const isGunpowderType = (type === TYPE_GUNPOWDER || type === TYPE_GUNPOWDER_DARK || type === TYPE_GUNPOWDER_LIGHT || type === TYPE_GUNPOWDER_BLACK);
+      if (isSandType || isGunpowderType) {
         if (y + 1 < HEIGHT) {
           const bIdx = belowOffset + x;
           const below = nextGrid[bIdx];
@@ -271,7 +280,7 @@ function updateSimulation() {
             if ((nt === TYPE_WOOD || nt === TYPE_WOOD_DARK || nt === TYPE_WOOD_LIGHT || nt === TYPE_WOOD_BARK || nt === TYPE_PLANT)) {
               nextGrid[nIdx] = TYPE_FIRE;
               fireLife[nIdx] = 25;
-            } else if (nt === TYPE_GUNPOWDER) {
+            } else if (nt === TYPE_GUNPOWDER || nt === TYPE_GUNPOWDER_DARK || nt === TYPE_GUNPOWDER_LIGHT || nt === TYPE_GUNPOWDER_BLACK) {
               explode(nIdx % WIDTH, Math.floor(nIdx / WIDTH), 8);
             } else if (nt === TYPE_WATER) {
               nextGrid[idx] = TYPE_SMOKE;
@@ -403,6 +412,12 @@ function drawAt(cx, cy, type, radius) {
             else if (r < 0.65) grid[idx] = TYPE_WOOD_DARK;
             else if (r < 0.85) grid[idx] = TYPE_WOOD_LIGHT;
             else grid[idx] = TYPE_WOOD_BARK;
+          } else if (type === TYPE_GUNPOWDER) {
+            const r = Math.random();
+            if (r < 0.35) grid[idx] = TYPE_GUNPOWDER;
+            else if (r < 0.65) grid[idx] = TYPE_GUNPOWDER_DARK;
+            else if (r < 0.85) grid[idx] = TYPE_GUNPOWDER_LIGHT;
+            else grid[idx] = TYPE_GUNPOWDER_BLACK;
           } else {
             grid[idx] = type;
           }
