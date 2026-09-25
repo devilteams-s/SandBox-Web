@@ -39,6 +39,11 @@ const TYPE_FIRE_ORANGE = 16;
 const TYPE_FIRE_YELLOW = 17;
 const TYPE_FIRE_DARK = 18;
 
+// Odun Doku Varyantları (Açık Meşe, Koyu Kabuk, Kuru Dal)
+const TYPE_WOOD_DARK = 19;
+const TYPE_WOOD_LIGHT = 20;
+const TYPE_WOOD_BARK = 21;
+
 // Önceden hesaplanmış 32-bit renk tablosu (ABGR - Little Endian)
 // Her karede 30.000 defa bit shift ve nesne erişimi yapmayı engeller!
 const COLOR_TABLE_32 = new Uint32Array(16);
@@ -56,7 +61,10 @@ COLOR_TABLE_32[TYPE_WATER]       = toABGR(79, 172, 254, 255); // Standart okyanu
 COLOR_TABLE_32[TYPE_WATER_DEEP]  = toABGR(41, 128, 185, 255); // Derin koyu su mavisi
 COLOR_TABLE_32[TYPE_WATER_LIGHT] = toABGR(129, 236, 236, 255); // Açık köpük / yüzey turkuazı
 COLOR_TABLE_32[TYPE_WATER_CYAN]  = toABGR(0, 168, 255, 255);   // Parlak neon camgöbeği
-COLOR_TABLE_32[TYPE_WOOD]       = toABGR(139, 90, 43, 255);
+COLOR_TABLE_32[TYPE_WOOD]       = toABGR(139, 90, 43, 255);  // Klasik meşe odunu
+COLOR_TABLE_32[TYPE_WOOD_DARK]  = toABGR(101, 67, 33, 255);   // Koyu ceviz ağacı
+COLOR_TABLE_32[TYPE_WOOD_LIGHT] = toABGR(176, 120, 68, 255);  // Açık odun / talaş
+COLOR_TABLE_32[TYPE_WOOD_BARK]  = toABGR(120, 75, 35, 255);   // Pürüzlü ağaç kabuğu
 COLOR_TABLE_32[TYPE_FIRE]        = toABGR(255, 78, 80, 255);  // Parlak kızılağaç ateşi
 COLOR_TABLE_32[TYPE_FIRE_ORANGE] = toABGR(255, 130, 45, 255); // Canlı alev turuncusu
 COLOR_TABLE_32[TYPE_FIRE_YELLOW] = toABGR(255, 220, 75, 255); // Akkor sarı merkez
@@ -260,7 +268,7 @@ function updateSimulation() {
           const nIdx = neighbors[i];
           if (nIdx >= 0 && nIdx < TOTAL_CELLS) {
             const nt = grid[nIdx];
-            if (nt === TYPE_WOOD || nt === TYPE_PLANT) {
+            if ((nt === TYPE_WOOD || nt === TYPE_WOOD_DARK || nt === TYPE_WOOD_LIGHT || nt === TYPE_WOOD_BARK || nt === TYPE_PLANT)) {
               nextGrid[nIdx] = TYPE_FIRE;
               fireLife[nIdx] = 25;
             } else if (nt === TYPE_GUNPOWDER) {
@@ -389,6 +397,12 @@ function drawAt(cx, cy, type, radius) {
             else if (r < 0.65) grid[idx] = TYPE_FIRE_ORANGE;
             else if (r < 0.85) grid[idx] = TYPE_FIRE_YELLOW;
             else grid[idx] = TYPE_FIRE_DARK;
+          } else if (type === TYPE_WOOD) {
+            const r = Math.random();
+            if (r < 0.40) grid[idx] = TYPE_WOOD;
+            else if (r < 0.65) grid[idx] = TYPE_WOOD_DARK;
+            else if (r < 0.85) grid[idx] = TYPE_WOOD_LIGHT;
+            else grid[idx] = TYPE_WOOD_BARK;
           } else {
             grid[idx] = type;
           }
