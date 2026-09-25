@@ -49,6 +49,11 @@ const TYPE_GUNPOWDER_DARK = 22;
 const TYPE_GUNPOWDER_LIGHT = 23;
 const TYPE_GUNPOWDER_BLACK = 24;
 
+// Asit Zehir Varyantları (Neon Lime, Zümrüt Korozyon, Açık Toksik Yeşil)
+const TYPE_ACID_DARK = 25;
+const TYPE_ACID_LIGHT = 26;
+const TYPE_ACID_TOXIC = 27;
+
 // Önceden hesaplanmış 32-bit renk tablosu (ABGR - Little Endian)
 // Her karede 30.000 defa bit shift ve nesne erişimi yapmayı engeller!
 const COLOR_TABLE_32 = new Uint32Array(16);
@@ -78,7 +83,10 @@ COLOR_TABLE_32[TYPE_GUNPOWDER]       = toABGR(127, 140, 141, 255); // Kurşuni b
 COLOR_TABLE_32[TYPE_GUNPOWDER_DARK]  = toABGR(85, 95, 105, 255);   // Koyu antrasit barut
 COLOR_TABLE_32[TYPE_GUNPOWDER_LIGHT] = toABGR(155, 168, 170, 255); // Açık kül grisi
 COLOR_TABLE_32[TYPE_GUNPOWDER_BLACK] = toABGR(50, 55, 60, 255);    // Zift kömür barutu
-COLOR_TABLE_32[TYPE_ACID]       = toABGR(46, 204, 113, 255);
+COLOR_TABLE_32[TYPE_ACID]       = toABGR(46, 204, 113, 255); // Canlı zehir yeşili
+COLOR_TABLE_32[TYPE_ACID_DARK]  = toABGR(26, 148, 80, 255);  // Koyu zümrüt asidi
+COLOR_TABLE_32[TYPE_ACID_LIGHT] = toABGR(85, 239, 150, 255); // Parlak asit kabarcığı
+COLOR_TABLE_32[TYPE_ACID_TOXIC] = toABGR(186, 255, 41, 255); // Fosforlu neon lime
 COLOR_TABLE_32[TYPE_PLANT]      = toABGR(39, 174, 96, 255);
 COLOR_TABLE_32[TYPE_SMOKE]      = toABGR(100, 105, 115, 255);
 
@@ -220,14 +228,14 @@ function updateSimulation() {
       }
 
       // 3. ASİT
-      else if (type === TYPE_ACID) {
+      else if (type === TYPE_ACID || type === TYPE_ACID_DARK || type === TYPE_ACID_LIGHT || type === TYPE_ACID_TOXIC) {
         const neighbors = [belowOffset + x, yOffset + x - 1, yOffset + x + 1, aboveOffset + x];
         let reacted = false;
         for (let i = 0; i < 4; i++) {
           const nIdx = neighbors[i];
           if (nIdx >= 0 && nIdx < TOTAL_CELLS) {
             const nt = grid[nIdx];
-            if (nt !== TYPE_EMPTY && nt !== TYPE_ACID && nt !== TYPE_WALL) {
+            if (nt !== TYPE_EMPTY && nt !== TYPE_ACID && nt !== TYPE_ACID_DARK && nt !== TYPE_ACID_LIGHT && nt !== TYPE_ACID_TOXIC && nt !== TYPE_WALL) {
               nextGrid[nIdx] = TYPE_EMPTY;
               nextGrid[idx] = TYPE_EMPTY;
               reacted = true;
@@ -418,6 +426,12 @@ function drawAt(cx, cy, type, radius) {
             else if (r < 0.65) grid[idx] = TYPE_GUNPOWDER_DARK;
             else if (r < 0.85) grid[idx] = TYPE_GUNPOWDER_LIGHT;
             else grid[idx] = TYPE_GUNPOWDER_BLACK;
+          } else if (type === TYPE_ACID) {
+            const r = Math.random();
+            if (r < 0.40) grid[idx] = TYPE_ACID;
+            else if (r < 0.65) grid[idx] = TYPE_ACID_DARK;
+            else if (r < 0.85) grid[idx] = TYPE_ACID_LIGHT;
+            else grid[idx] = TYPE_ACID_TOXIC;
           } else {
             grid[idx] = type;
           }
