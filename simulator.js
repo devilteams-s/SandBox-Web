@@ -340,12 +340,16 @@ function drawAt(cx, cy, type, radius) {
   for (let dy = -radius; dy <= radius; dy++) {
     for (let dx = -radius; dx <= radius; dx++) {
       if (dx * dx + dy * dy <= radius * radius) {
+        // Doğal akış hissi için hafif rastgele serpiştirme ve yoğun akış
+        if (type !== TYPE_WALL && type !== TYPE_EMPTY && Math.random() < 0.25) continue;
+
         const x = cx + dx;
         const y = cy + dy;
         if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT) {
           const idx = getIndex(x, y);
-          // Duvar hariç üzerine çizilebilir
-          if (type === TYPE_EMPTY || grid[idx] === TYPE_EMPTY || type === TYPE_WALL) {
+          if (type === TYPE_EMPTY) {
+            grid[idx] = TYPE_EMPTY;
+          } else if (grid[idx] === TYPE_EMPTY || (type === TYPE_WALL) || (grid[idx] !== TYPE_WALL && Math.random() < 0.2)) {
             grid[idx] = type;
             if (type === TYPE_FIRE) {
               fireLife[idx] = 30 + Math.floor(Math.random() * 20);
@@ -389,7 +393,7 @@ canvas.addEventListener('mousemove', (e) => {
 });
 
 canvas.addEventListener('mouseleave', () => {
-  currentMousePos = null;
+  // Tuvalden çıksa bile basılı tutuyorsa son konumu sakla
 });
 
 canvas.addEventListener('contextmenu', e => e.preventDefault());
@@ -480,12 +484,17 @@ function loop(currentTime) {
     lastTime = currentTime;
   }
 
-  // Fare basılı tutuluyorsa hareket etmese bile her karede kesintisiz akıt
+  // Fare basılı tutuluyorsa hareket etmese bile kesintisiz ve yoğun akıt
   if (isDrawing && currentMousePos) {
     drawAt(currentMousePos.x, currentMousePos.y, drawType, brushSize);
   }
 
   if (!isPaused) {
+    // 2x Fizik adımı: Simülasyonu belirgin şekilde hızlandırır ve akışkanlığı katlar
+    updateSimulation();
+    if (isDrawing && currentMousePos) {
+      drawAt(currentMousePos.x, currentMousePos.y, drawType, brushSize);
+    }
     updateSimulation();
   }
   render();
