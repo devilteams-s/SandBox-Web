@@ -1,3 +1,118 @@
+
+// ==========================================
+// ÇOKLU DİL DESTEĞİ (TR / EN i18n)
+// ==========================================
+let currentLang = localStorage.getItem('sand_lang') || 'tr';
+
+const TRANSLATIONS = {
+  tr: {
+    langBtn: '🌐 EN',
+    subtitle: 'Hücresel Otomat & Piksel Fizik Motoru',
+    secElements: 'Element Seçimi',
+    secBrush: 'Fırça Ayarları',
+    secControls: 'Kontroller',
+    secPresets: 'Hazır Şablonlar',
+    brushLabel: 'Fırça Boyutu:',
+    pause: '⏸️ Duraklat',
+    resume: '▶️ Devam Et',
+    step: '⏭️ Adım',
+    clear: '🗑️ Temizle',
+    presetHourglass: '⏳ Kum Saati',
+    presetBomb: '💥 Barut & Ateş',
+    canvasHint: 'Sol Tık: Element Dök / Sağ Tık: Sil | Tekerlek: Fırça Boyutu',
+    particles: 'Parçacık:',
+    elements: {
+      sand: '⏳ Kum (Sand)',
+      water: '💧 Su (Water)',
+      wood: '🪵 Odun (Wood)',
+      fire: '🔥 Ateş (Fire)',
+      gunpowder: '💣 Barut (Gunpowder)',
+      acid: '🧪 Asit (Acid)',
+      plant: '🌱 Bitki (Plant)',
+      wall: '🧱 Duvar (Wall)',
+      empty: '🧹 Silgi (Empty)'
+    }
+  },
+  en: {
+    langBtn: '🌐 TR',
+    subtitle: 'Cellular Automata & Pixel Physics Engine',
+    secElements: 'Element Selection',
+    secBrush: 'Brush Settings',
+    secControls: 'Controls',
+    secPresets: 'Presets',
+    brushLabel: 'Brush Size:',
+    pause: '⏸️ Pause',
+    resume: '▶️ Resume',
+    step: '⏭️ Step',
+    clear: '🗑️ Clear',
+    presetHourglass: '⏳ Hourglass',
+    presetBomb: '💥 Powder & Fire',
+    canvasHint: 'Left Click: Pour Element / Right Click: Erase | Wheel: Brush Size',
+    particles: 'Particles:',
+    elements: {
+      sand: '⏳ Sand',
+      water: '💧 Water',
+      wood: '🪵 Wood',
+      fire: '🔥 Fire',
+      gunpowder: '💣 Gunpowder',
+      acid: '🧪 Acid',
+      plant: '🌱 Plant',
+      wall: '🧱 Wall',
+      empty: '🧹 Eraser'
+    }
+  }
+};
+
+function applyLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('sand_lang', lang);
+  const t = TRANSLATIONS[lang];
+
+  const lBtn = document.getElementById('btn-lang');
+  if (lBtn) lBtn.textContent = t.langBtn;
+
+  const sub = document.querySelector('.subtitle');
+  if (sub) sub.textContent = t.subtitle;
+
+  const titles = document.querySelectorAll('.sidebar .section-title');
+  if (titles.length >= 4) {
+    titles[0].textContent = t.secElements;
+    titles[1].textContent = t.secBrush;
+    titles[2].textContent = t.secControls;
+    titles[3].textContent = t.secPresets;
+  }
+
+  const pBtn = document.getElementById('btn-pause');
+  if (pBtn) pBtn.textContent = isPaused ? t.resume : t.pause;
+
+  const sBtn = document.getElementById('btn-step');
+  if (sBtn) sBtn.textContent = t.step;
+
+  const cBtn = document.getElementById('btn-clear');
+  if (cBtn) cBtn.textContent = t.clear;
+
+  const hBtn = document.getElementById('preset-hourglass');
+  if (hBtn) hBtn.textContent = t.presetHourglass;
+
+  const bBtn = document.getElementById('preset-bomb');
+  if (bBtn) bBtn.textContent = t.presetBomb;
+
+  const hint = document.querySelector('.canvas-hint');
+  if (hint) hint.textContent = t.canvasHint;
+
+  // Parçacık etiketi
+  const pLabel = document.querySelectorAll('.stats-panel .label');
+  if (pLabel.length >= 2) pLabel[1].textContent = t.particles;
+
+  // Element Butonları
+  document.querySelectorAll('.el-btn').forEach(btn => {
+    const elType = btn.dataset.element;
+    if (t.elements[elType]) {
+      btn.innerHTML = `<span class="el-icon"></span> ${t.elements[elType]}`;
+    }
+  });
+}
+
 /**
  * SandBox - Yüksek Performanslı Piksel Fizik & Hücresel Otomat Motoru
  * 60 FPS Optimize Edilmiş Mimari
@@ -593,7 +708,21 @@ function loop(currentTime) {
   }
 
   render();
-  requestAnimationFrame(loop);
+  applyLanguage(currentLang);
+const btnLang = document.getElementById('btn-lang');
+if (btnLang) {
+  btnLang.addEventListener('click', () => {
+    applyLanguage(currentLang === 'tr' ? 'en' : 'tr');
+  });
+}
+requestAnimationFrame(loop);
 }
 
+applyLanguage(currentLang);
+const btnLang = document.getElementById('btn-lang');
+if (btnLang) {
+  btnLang.addEventListener('click', () => {
+    applyLanguage(currentLang === 'tr' ? 'en' : 'tr');
+  });
+}
 requestAnimationFrame(loop);
