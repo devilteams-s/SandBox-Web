@@ -62,7 +62,7 @@ let currentElement = 'sand';
 let brushSize = 3;
 let isDrawing = false;
 let drawType = TYPE_SAND;
-let lastMousePos = null;
+let currentMousePos = null;
 
 // Element Adını ID'ye dönüştürme
 const EL_MAP = {
@@ -371,19 +371,25 @@ function getCanvasPos(e) {
 canvas.addEventListener('mousedown', (e) => {
   isDrawing = true;
   drawType = (e.button === 2) ? TYPE_EMPTY : EL_MAP[currentElement];
-  const pos = getCanvasPos(e);
-  drawAt(pos.x, pos.y, drawType, brushSize);
+  currentMousePos = getCanvasPos(e);
+  drawAt(currentMousePos.x, currentMousePos.y, drawType, brushSize);
 });
 
 window.addEventListener('mouseup', () => {
   isDrawing = false;
+  currentMousePos = null;
 });
 
 canvas.addEventListener('mousemove', (e) => {
+  const pos = getCanvasPos(e);
+  currentMousePos = pos;
   if (isDrawing) {
-    const pos = getCanvasPos(e);
     drawAt(pos.x, pos.y, drawType, brushSize);
   }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  currentMousePos = null;
 });
 
 canvas.addEventListener('contextmenu', e => e.preventDefault());
@@ -472,6 +478,11 @@ function loop(currentTime) {
     fpsEl.textContent = frames;
     frames = 0;
     lastTime = currentTime;
+  }
+
+  // Fare basılı tutuluyorsa hareket etmese bile her karede kesintisiz akıt
+  if (isDrawing && currentMousePos) {
+    drawAt(currentMousePos.x, currentMousePos.y, drawType, brushSize);
   }
 
   if (!isPaused) {
