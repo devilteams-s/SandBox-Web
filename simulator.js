@@ -29,6 +29,11 @@ const TYPE_SAND_DARK = 10;
 const TYPE_SAND_LIGHT = 11;
 const TYPE_SAND_GOLD = 12;
 
+// Derinlik ve Dalga hissi için Su Renk Varyantları (3 farklı ton)
+const TYPE_WATER_DEEP = 13;
+const TYPE_WATER_LIGHT = 14;
+const TYPE_WATER_CYAN = 15;
+
 // Önceden hesaplanmış 32-bit renk tablosu (ABGR - Little Endian)
 // Her karede 30.000 defa bit shift ve nesne erişimi yapmayı engeller!
 const COLOR_TABLE_32 = new Uint32Array(16);
@@ -42,7 +47,10 @@ COLOR_TABLE_32[TYPE_SAND]       = toABGR(246, 211, 101, 255); // Orta altın sar
 COLOR_TABLE_32[TYPE_SAND_DARK]  = toABGR(225, 185, 75, 255);  // Koyu çöl sarısı
 COLOR_TABLE_32[TYPE_SAND_LIGHT] = toABGR(255, 230, 138, 255); // Açık parlak kum sarısı
 COLOR_TABLE_32[TYPE_SAND_GOLD]  = toABGR(243, 198, 80, 255);  // Sıcak amber kumu
-COLOR_TABLE_32[TYPE_WATER]      = toABGR(79, 172, 254, 255);
+COLOR_TABLE_32[TYPE_WATER]       = toABGR(79, 172, 254, 255); // Standart okyanus mavisi
+COLOR_TABLE_32[TYPE_WATER_DEEP]  = toABGR(41, 128, 185, 255); // Derin koyu su mavisi
+COLOR_TABLE_32[TYPE_WATER_LIGHT] = toABGR(129, 236, 236, 255); // Açık köpük / yüzey turkuazı
+COLOR_TABLE_32[TYPE_WATER_CYAN]  = toABGR(0, 168, 255, 255);   // Parlak neon camgöbeği
 COLOR_TABLE_32[TYPE_WOOD]       = toABGR(139, 90, 43, 255);
 COLOR_TABLE_32[TYPE_FIRE]       = toABGR(255, 78, 80, 255);
 COLOR_TABLE_32[TYPE_GUNPOWDER]  = toABGR(127, 140, 141, 255);
@@ -121,7 +129,7 @@ function updateSimulation() {
           const bIdx = belowOffset + x;
           const below = nextGrid[bIdx];
 
-          if (below === TYPE_EMPTY || below === TYPE_WATER || below === TYPE_ACID) {
+          if (below === TYPE_EMPTY || (below === TYPE_WATER || below === TYPE_WATER_DEEP || below === TYPE_WATER_LIGHT || below === TYPE_WATER_CYAN) || below === TYPE_ACID) {
             nextGrid[idx] = below;
             nextGrid[bIdx] = type;
             if (y + 1 > newMaxY) newMaxY = y + 1;
@@ -134,7 +142,7 @@ function updateSimulation() {
             if (d1 >= 0 && d1 < WIDTH) {
               const diagIdx = belowOffset + d1;
               const diag = nextGrid[diagIdx];
-              if (diag === TYPE_EMPTY || diag === TYPE_WATER || diag === TYPE_ACID) {
+              if (diag === TYPE_EMPTY || (diag === TYPE_WATER || diag === TYPE_WATER_DEEP || diag === TYPE_WATER_LIGHT || diag === TYPE_WATER_CYAN) || diag === TYPE_ACID) {
                 nextGrid[idx] = diag;
                 nextGrid[diagIdx] = type;
                 moved = true;
@@ -144,7 +152,7 @@ function updateSimulation() {
             if (!moved && d2 >= 0 && d2 < WIDTH) {
               const diagIdx = belowOffset + d2;
               const diag = nextGrid[diagIdx];
-              if (diag === TYPE_EMPTY || diag === TYPE_WATER || diag === TYPE_ACID) {
+              if (diag === TYPE_EMPTY || (diag === TYPE_WATER || diag === TYPE_WATER_DEEP || diag === TYPE_WATER_LIGHT || diag === TYPE_WATER_CYAN) || diag === TYPE_ACID) {
                 nextGrid[idx] = diag;
                 nextGrid[diagIdx] = type;
                 if (y + 1 > newMaxY) newMaxY = y + 1;
@@ -154,13 +162,13 @@ function updateSimulation() {
         }
       }
 
-      // 2. SU
-      else if (type === TYPE_WATER) {
+      // 2. SU (Tüm su tonları aynı akışkanlık fiziğini paylaşır)
+      else if (type === TYPE_WATER || type === TYPE_WATER_DEEP || type === TYPE_WATER_LIGHT || type === TYPE_WATER_CYAN) {
         if (y + 1 < HEIGHT) {
           const bIdx = belowOffset + x;
           if (nextGrid[bIdx] === TYPE_EMPTY) {
             nextGrid[idx] = TYPE_EMPTY;
-            nextGrid[bIdx] = TYPE_WATER;
+            nextGrid[bIdx] = type;
             if (y + 1 > newMaxY) newMaxY = y + 1;
             continue;
           }
@@ -168,24 +176,21 @@ function updateSimulation() {
         const dir = (x + y) % 2 === 0 ? -1 : 1;
         const d1 = x + dir;
         const d2 = x - dir;
-        let moved = false;
 
         if (y + 1 < HEIGHT && d1 >= 0 && d1 < WIDTH && nextGrid[belowOffset + d1] === TYPE_EMPTY) {
           nextGrid[idx] = TYPE_EMPTY;
-          nextGrid[belowOffset + d1] = TYPE_WATER;
-          moved = true;
+          nextGrid[belowOffset + d1] = type;
           if (y + 1 > newMaxY) newMaxY = y + 1;
         } else if (y + 1 < HEIGHT && d2 >= 0 && d2 < WIDTH && nextGrid[belowOffset + d2] === TYPE_EMPTY) {
           nextGrid[idx] = TYPE_EMPTY;
-          nextGrid[belowOffset + d2] = TYPE_WATER;
-          moved = true;
+          nextGrid[belowOffset + d2] = type;
           if (y + 1 > newMaxY) newMaxY = y + 1;
         } else if (d1 >= 0 && d1 < WIDTH && nextGrid[yOffset + d1] === TYPE_EMPTY) {
           nextGrid[idx] = TYPE_EMPTY;
-          nextGrid[yOffset + d1] = TYPE_WATER;
+          nextGrid[yOffset + d1] = type;
         } else if (d2 >= 0 && d2 < WIDTH && nextGrid[yOffset + d2] === TYPE_EMPTY) {
           nextGrid[idx] = TYPE_EMPTY;
-          nextGrid[yOffset + d2] = TYPE_WATER;
+          nextGrid[yOffset + d2] = type;
         }
       }
 
@@ -363,6 +368,13 @@ function drawAt(cx, cy, type, radius) {
             else if (r < 0.60) grid[idx] = TYPE_SAND_DARK;
             else if (r < 0.85) grid[idx] = TYPE_SAND_LIGHT;
             else grid[idx] = TYPE_SAND_GOLD;
+          } else if (type === TYPE_WATER) {
+            // Su dökülürken okyanus dalga ve derinlik tonları
+            const r = Math.random();
+            if (r < 0.40) grid[idx] = TYPE_WATER;
+            else if (r < 0.65) grid[idx] = TYPE_WATER_DEEP;
+            else if (r < 0.85) grid[idx] = TYPE_WATER_LIGHT;
+            else grid[idx] = TYPE_WATER_CYAN;
           } else {
             grid[idx] = type;
           }
