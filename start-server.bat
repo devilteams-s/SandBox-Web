@@ -1,6 +1,6 @@
 @echo off
-title ElementLab Simulator Sunucusu
-echo ElementLab Simulator baslatiliyor...
+title SandBox Sunucusu
+echo SandBox baslatiliyor...
 python server.py
 if %ERRORLEVEL% NEQ 0 (
     echo.

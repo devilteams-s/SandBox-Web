@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ElementLab Sand Simulator - Yerel Geliştirme Sunucusu
+SandBox - Yerel Geliştirme Sunucusu
 Hem Linux hem Windows ile tam uyumludur.
 """
 
@@ -44,7 +44,7 @@ def main():
     url = f"http://localhost:{port}"
 
     print("=" * 55)
-    print("⚗️  \033[1mElementLab Simulator - Yerel Sunucu\033[0m")
+    print("⚗️  \033[1mSandBox - Yerel Sunucu\033[0m")
     print("=" * 55)
     print(f"📂 Dizin:       {script_dir}")
     print(f"🌐 Adres:       \033[94m{url}\033[0m")

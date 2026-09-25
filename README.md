@@ -1,4 +1,4 @@
-# ⚗️ ElementLab Sand Simulator
+# ⚗️ SandBox
 
 > Noita ve Powder Game benzeri, tarayıcı tabanlı **hücresel otomat ve piksel fizik motoru**. Sıfır harici kütüphane bağımlılığı ile saf HTML5 Canvas ve modern JavaScript ile inşa edilmiştir.
 
