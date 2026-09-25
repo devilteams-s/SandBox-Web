@@ -54,6 +54,11 @@ const TYPE_ACID_DARK = 25;
 const TYPE_ACID_LIGHT = 26;
 const TYPE_ACID_TOXIC = 27;
 
+// Bitki & Filiz Varyantları (Taze Yaprak, Orman Yeşili, Sarmaşık)
+const TYPE_PLANT_DARK = 28;
+const TYPE_PLANT_LIGHT = 29;
+const TYPE_PLANT_VINE = 30;
+
 // Önceden hesaplanmış 32-bit renk tablosu (ABGR - Little Endian)
 // Her karede 30.000 defa bit shift ve nesne erişimi yapmayı engeller!
 const COLOR_TABLE_32 = new Uint32Array(16);
@@ -87,7 +92,10 @@ COLOR_TABLE_32[TYPE_ACID]       = toABGR(46, 204, 113, 255); // Canlı zehir ye�
 COLOR_TABLE_32[TYPE_ACID_DARK]  = toABGR(26, 148, 80, 255);  // Koyu zümrüt asidi
 COLOR_TABLE_32[TYPE_ACID_LIGHT] = toABGR(85, 239, 150, 255); // Parlak asit kabarcığı
 COLOR_TABLE_32[TYPE_ACID_TOXIC] = toABGR(186, 255, 41, 255); // Fosforlu neon lime
-COLOR_TABLE_32[TYPE_PLANT]      = toABGR(39, 174, 96, 255);
+COLOR_TABLE_32[TYPE_PLANT]       = toABGR(39, 174, 96, 255);  // Canlı orman yeşili
+COLOR_TABLE_32[TYPE_PLANT_DARK]  = toABGR(20, 110, 60, 255);  // Koyu nemli yosun yeşili
+COLOR_TABLE_32[TYPE_PLANT_LIGHT] = toABGR(70, 220, 115, 255); // Taze açık filiz
+COLOR_TABLE_32[TYPE_PLANT_VINE]  = toABGR(30, 140, 75, 255);  // Sarmaşık gövdesi
 COLOR_TABLE_32[TYPE_SMOKE]      = toABGR(100, 105, 115, 255);
 
 // Izgara Belleği
@@ -285,7 +293,7 @@ function updateSimulation() {
           const nIdx = neighbors[i];
           if (nIdx >= 0 && nIdx < TOTAL_CELLS) {
             const nt = grid[nIdx];
-            if ((nt === TYPE_WOOD || nt === TYPE_WOOD_DARK || nt === TYPE_WOOD_LIGHT || nt === TYPE_WOOD_BARK || nt === TYPE_PLANT)) {
+            if ((nt === TYPE_WOOD || nt === TYPE_WOOD_DARK || nt === TYPE_WOOD_LIGHT || nt === TYPE_WOOD_BARK || (nt === TYPE_PLANT || nt === TYPE_PLANT_DARK || nt === TYPE_PLANT_LIGHT || nt === TYPE_PLANT_VINE))) {
               nextGrid[nIdx] = TYPE_FIRE;
               fireLife[nIdx] = 25;
             } else if (nt === TYPE_GUNPOWDER || nt === TYPE_GUNPOWDER_DARK || nt === TYPE_GUNPOWDER_LIGHT || nt === TYPE_GUNPOWDER_BLACK) {
@@ -298,7 +306,7 @@ function updateSimulation() {
       }
 
       // 5. BİTKİ
-      else if (type === TYPE_PLANT) {
+      else if (type === TYPE_PLANT || type === TYPE_PLANT_DARK || type === TYPE_PLANT_LIGHT || type === TYPE_PLANT_VINE) {
         const neighbors = [aboveOffset + x, belowOffset + x, yOffset + x - 1, yOffset + x + 1];
         for (let i = 0; i < 4; i++) {
           const nIdx = neighbors[i];
@@ -306,7 +314,8 @@ function updateSimulation() {
             nextGrid[nIdx] = TYPE_EMPTY;
             const growIdx = neighbors[(i + 1) % 4];
             if (growIdx >= 0 && growIdx < TOTAL_CELLS && nextGrid[growIdx] === TYPE_EMPTY) {
-              nextGrid[growIdx] = TYPE_PLANT;
+              const r = Math.random();
+              nextGrid[growIdx] = r < 0.4 ? TYPE_PLANT : (r < 0.7 ? TYPE_PLANT_DARK : TYPE_PLANT_LIGHT);
             }
           }
         }
@@ -432,6 +441,12 @@ function drawAt(cx, cy, type, radius) {
             else if (r < 0.65) grid[idx] = TYPE_ACID_DARK;
             else if (r < 0.85) grid[idx] = TYPE_ACID_LIGHT;
             else grid[idx] = TYPE_ACID_TOXIC;
+          } else if (type === TYPE_PLANT) {
+            const r = Math.random();
+            if (r < 0.40) grid[idx] = TYPE_PLANT;
+            else if (r < 0.65) grid[idx] = TYPE_PLANT_DARK;
+            else if (r < 0.85) grid[idx] = TYPE_PLANT_LIGHT;
+            else grid[idx] = TYPE_PLANT_VINE;
           } else {
             grid[idx] = type;
           }
