@@ -12,7 +12,7 @@ import sys
 import threading
 import time
 
-DEFAULT_PORT = 5174
+DEFAULT_PORT = 3032
 
 class CustomHTTPHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
